@@ -1,6 +1,10 @@
 from fastapi import FastAPI
+from .database import engine, Base
+from . import models
 
-app = FastAPI(title="Sales Invoice Management System")
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Multi-Tenant Sales Invoice Management System")
 
 @app.get("/")
 def home():
