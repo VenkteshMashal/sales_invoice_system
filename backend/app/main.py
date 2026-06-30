@@ -7,7 +7,7 @@ from app.routers import owner_router
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Multi-Tenant Sales Invoice Management System")
+app = FastAPI(title="Sales Invoice Management System")
 
 app.include_router(owner_router.router)
 
