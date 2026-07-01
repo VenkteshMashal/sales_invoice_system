@@ -8,6 +8,8 @@ from app.models.product import Product
 from app.models.invoice import Invoice
 from app.models.invoice_item import InvoiceItem
 from app.schemas.invoice import InvoiceCreate
+from num2words import num2words
+from datetime import date
 
 
 def verify_company(company_id: int, owner_id: int, db: Session):
@@ -26,17 +28,32 @@ def verify_company(company_id: int, owner_id: int, db: Session):
 
 
 def generate_invoice_number(company_id: int, db: Session):
+    current_year = date.today().year
+
     last_invoice = db.query(Invoice).filter(
         Invoice.company_id == company_id
     ).order_by(Invoice.id.desc()).first()
 
     if not last_invoice:
-        return "INV-0001"
+        return f"INV/{current_year}/0001"
 
-    last_number = int(last_invoice.invoice_number.split("-")[1])
+    old_invoice_number = last_invoice.invoice_number
+
+    if "/" in old_invoice_number:
+        last_number = int(old_invoice_number.split("/")[-1])
+    elif "-" in old_invoice_number:
+        last_number = int(old_invoice_number.split("-")[-1])
+    else:
+        last_number = last_invoice.id
+
     new_number = last_number + 1
 
-    return f"INV-{new_number:04d}"
+    return f"INV/{current_year}/{new_number:04d}"
+
+def convert_amount_to_words(amount: Decimal):
+    amount_int = int(amount)
+    words = num2words(amount_int, lang="en_IN").title()
+    return f"{words} Rupees Only"
 
 
 def create_invoice(company_id: int, owner_id: int, invoice_data: InvoiceCreate, db: Session):
@@ -74,7 +91,7 @@ def create_invoice(company_id: int, owner_id: int, invoice_data: InvoiceCreate, 
                 detail=f"Product with id {item.product_id} not found"
             )
 
-        amount = Decimal(item.quantity) * Decimal(product.price_per_unit)
+        amount = (Decimal(item.quantity) * Decimal(product.price_per_unit)).quantize(Decimal("0.01"))
         sub_total += amount
 
         invoice_items.append({
@@ -86,6 +103,10 @@ def create_invoice(company_id: int, owner_id: int, invoice_data: InvoiceCreate, 
             "amount": amount
         })
 
+    gst_amount = invoice_data.gst_amount or Decimal("0.00")
+    total_amount = (sub_total + gst_amount).quantize(Decimal("0.01"))
+    amount_in_words = convert_amount_to_words(total_amount)
+
     invoice_number = generate_invoice_number(company_id, db)
 
     new_invoice = Invoice(
@@ -94,9 +115,11 @@ def create_invoice(company_id: int, owner_id: int, invoice_data: InvoiceCreate, 
         invoice_number=invoice_number,
         invoice_date=invoice_data.invoice_date,
         sub_total=sub_total,
-        total_amount=sub_total,
+        gst_amount=gst_amount,
+        total_amount=total_amount,
         paid_amount=Decimal("0.00"),
-        balance_amount=sub_total,
+        balance_amount=total_amount,
+        amount_in_words=amount_in_words,
         payment_status="Unpaid"
     )
 

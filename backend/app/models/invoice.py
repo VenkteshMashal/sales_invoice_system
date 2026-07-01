@@ -17,11 +17,13 @@ class Invoice(Base):
     invoice_date = Column(Date, default=date.today)
 
     sub_total = Column(Numeric(12, 2), nullable=False)
+    gst_amount = Column(Numeric(12, 2), default=0)
     total_amount = Column(Numeric(12, 2), nullable=False)
 
     paid_amount = Column(Numeric(12, 2), default=0)
     balance_amount = Column(Numeric(12, 2), nullable=False)
 
+    amount_in_words = Column(String(500), nullable=True)
     payment_status = Column(String(20), default="Unpaid")
 
     created_at = Column(DateTime, default=datetime.utcnow)

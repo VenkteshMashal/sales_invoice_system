@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from decimal import Decimal
 from datetime import date
 
@@ -12,6 +12,7 @@ class InvoiceItemCreate(BaseModel):
 class InvoiceCreate(BaseModel):
     customer_id: int
     invoice_date: date
+    gst_amount: Optional[Decimal] = Decimal("0.00")
     items: List[InvoiceItemCreate]
 
 
@@ -35,9 +36,11 @@ class InvoiceResponse(BaseModel):
     invoice_number: str
     invoice_date: date
     sub_total: Decimal
+    gst_amount: Decimal
     total_amount: Decimal
     paid_amount: Decimal
     balance_amount: Decimal
+    amount_in_words: str
     payment_status: str
     items: List[InvoiceItemResponse]
 
