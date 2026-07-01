@@ -4,6 +4,7 @@ from app.database.database import Base
 from app.database.session import engine
 from app.models import owner, company
 from app.routers import owner_router, company_router
+from app.models import owner, company, customer
 
 Base.metadata.create_all(bind=engine)
 
