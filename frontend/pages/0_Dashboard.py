@@ -5,25 +5,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from utils.api import BASE_URL, get_headers
-from utils.auth import require_login, require_company, get_current_owner, logout
+from utils.auth import require_login, require_company
+from utils.layout import render_header
 
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
 require_login()
 require_company()
 
-owner = get_current_owner()
-company_id = st.session_state["company_id"]
-
-st.sidebar.title("🧾 Invoice System")
-st.sidebar.success(f"👤 {owner['owner_name']}")
-st.sidebar.info(f"🏢 {st.session_state['company_name']}")
-
-if st.sidebar.button("Logout"):
-    logout()
-
-st.title("📊 Dashboard")
+render_header("📊 Dashboard")
 st.caption("Business overview for selected company")
+company_id = st.session_state["company_id"]
 
 # ---------- Summary Cards ----------
 summary_response = requests.get(
@@ -126,7 +118,7 @@ if product_response.status_code == 200:
         ax.set_ylabel("Total Sales Amount")
         st.pyplot(fig)
 
-        st.dataframe(df_products, use_container_width=True)
+        st.dataframe(df_products, width="stretch")
     else:
         st.info("No product sales data available.")
 
