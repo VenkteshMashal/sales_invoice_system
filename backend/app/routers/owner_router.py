@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.schemas.owner import OwnerRegister, OwnerLogin, OwnerResponse, TokenResponse
 from app.services.owner_service import register_owner, authenticate_owner
-from app.core.security import create_access_token
+from app.core.security import create_access_token, get_current_owner
+from app.models.owner import Owner
 
 router = APIRouter(
     prefix="/auth",
@@ -39,3 +40,7 @@ def login(owner_data: OwnerLogin, db: Session = Depends(get_db)):
         "access_token": token,
         "token_type": "bearer"
     }
+    
+@router.get("/me", response_model=OwnerResponse)
+def get_me(current_owner: Owner = Depends(get_current_owner)):
+    return current_owner    
