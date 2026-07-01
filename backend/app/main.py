@@ -2,9 +2,7 @@ from fastapi import FastAPI
 
 from app.database.database import Base
 from app.database.session import engine
-from app.models import owner, company
-from app.routers import owner_router, company_router
-from app.models import owner, company, customer, product
+from app.models import owner, company, customer, product, invoice, invoice_item
 from app.routers import owner_router, company_router, customer_router, product_router
 
 Base.metadata.create_all(bind=engine)
