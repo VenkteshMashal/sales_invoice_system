@@ -90,6 +90,64 @@ st.dataframe(df, width="stretch")
 
 st.divider()
 
+st.divider()
+
+st.subheader("✏️ Edit Customer")
+
+edit_options = {
+    f"{row['customer_name']} - ID {row['id']}": row
+    for _, row in df.iterrows()
+}
+
+if edit_options:
+    selected_edit_customer = st.selectbox(
+        "Select Customer to Edit",
+        list(edit_options.keys())
+    )
+
+    customer = edit_options[selected_edit_customer]
+
+    with st.form("edit_customer_form"):
+        col1, col2 = st.columns(2)
+
+        with col1:
+            edit_name = st.text_input("Customer Name", value=customer["customer_name"])
+            edit_phone = st.text_input("Phone Number", value=customer["phone"])
+            edit_email = st.text_input("Email", value=customer.get("email") or "")
+            edit_gst = st.text_input("GST Number", value=customer.get("gst_number") or "")
+
+        with col2:
+            edit_city = st.text_input("City", value=customer.get("city") or "")
+            edit_state = st.text_input("State", value=customer.get("state") or "")
+            edit_pin = st.text_input("PIN Code", value=customer.get("pin_code") or "")
+            edit_address = st.text_area("Address", value=customer.get("address") or "")
+
+        update_btn = st.form_submit_button("Update Customer")
+
+        if update_btn:
+            payload = {
+                "customer_name": edit_name,
+                "phone": edit_phone,
+                "email": edit_email if edit_email else None,
+                "address": edit_address,
+                "city": edit_city,
+                "state": edit_state,
+                "pin_code": edit_pin,
+                "gst_number": edit_gst
+            }
+
+            response = requests.put(
+                f"{BASE_URL}/customers/{customer['id']}/company/{company_id}",
+                json=payload,
+                headers=get_headers()
+            )
+
+            if response.status_code == 200:
+                st.success("Customer updated successfully.")
+                st.rerun()
+            else:
+                st.error(response.json().get("detail", "Failed to update customer"))
+
 # ---------- Delete Customer ----------
 st.subheader("Delete Customer")
 
