@@ -40,89 +40,89 @@ st.divider()
 # ---------- Charts ----------
 col1, col2 = st.columns(2)
 
-with col1:
-    st.subheader("Payment Status")
+# with col1:
+#     st.subheader("Payment Status")
 
-    payment_response = requests.get(
-        f"{BASE_URL}/reports/payment-status/company/{company_id}",
-        headers=get_headers()
-    )
+#     payment_response = requests.get(
+#         f"{BASE_URL}/reports/payment-status/company/{company_id}",
+#         headers=get_headers()
+#     )
 
-    if payment_response.status_code == 200:
-        payment_data = payment_response.json()
+#     if payment_response.status_code == 200:
+#         payment_data = payment_response.json()
 
-        if payment_data:
-            df_payment = pd.DataFrame(payment_data)
+#         if payment_data:
+#             df_payment = pd.DataFrame(payment_data)
 
-            fig, ax = plt.subplots()
-            ax.pie(
-                df_payment["count"],
-                labels=df_payment["payment_status"],
-                autopct="%1.1f%%"
-            )
-            ax.set_title("Payment Status")
-            st.pyplot(fig)
-        else:
-            st.info("No payment data available.")
+#             fig, ax = plt.subplots()
+#             ax.pie(
+#                 df_payment["count"],
+#                 labels=df_payment["payment_status"],
+#                 autopct="%1.1f%%"
+#             )
+#             ax.set_title("Payment Status")
+#             st.pyplot(fig)
+#         else:
+#             st.info("No payment data available.")
 
-with col2:
-    st.subheader("Top Customers")
+# with col2:
+#     st.subheader("Top Customers")
 
-    customer_response = requests.get(
-        f"{BASE_URL}/reports/top-customers/company/{company_id}",
-        headers=get_headers()
-    )
+#     customer_response = requests.get(
+#         f"{BASE_URL}/reports/top-customers/company/{company_id}",
+#         headers=get_headers()
+#     )
 
-    if customer_response.status_code == 200:
-        customer_data = customer_response.json()
+#     if customer_response.status_code == 200:
+#         customer_data = customer_response.json()
 
-        if customer_data:
-            df_customers = pd.DataFrame(customer_data)
+#         if customer_data:
+#             df_customers = pd.DataFrame(customer_data)
 
-            fig, ax = plt.subplots()
-            sns.barplot(
-                data=df_customers,
-                x="total_purchase",
-                y="customer_name",
-                ax=ax
-            )
-            ax.set_xlabel("Total Purchase")
-            ax.set_ylabel("Customer")
-            st.pyplot(fig)
-        else:
-            st.info("No customer report available.")
+#             fig, ax = plt.subplots()
+#             sns.barplot(
+#                 data=df_customers,
+#                 x="total_purchase",
+#                 y="customer_name",
+#                 ax=ax
+#             )
+#             ax.set_xlabel("Total Purchase")
+#             ax.set_ylabel("Customer")
+#             st.pyplot(fig)
+#         else:
+#             st.info("No customer report available.")
 
-st.divider()
+# st.divider()
 
-st.subheader("Product Sales")
+# st.subheader("Product Sales")
 
-product_response = requests.get(
-    f"{BASE_URL}/reports/product-sales/company/{company_id}",
-    headers=get_headers()
-)
+# product_response = requests.get(
+#     f"{BASE_URL}/reports/product-sales/company/{company_id}",
+#     headers=get_headers()
+# )
 
-if product_response.status_code == 200:
-    product_data = product_response.json()
+# if product_response.status_code == 200:
+#     product_data = product_response.json()
 
-    if product_data:
-        df_products = pd.DataFrame(product_data)
+#     if product_data:
+#         df_products = pd.DataFrame(product_data)
 
-        fig, ax = plt.subplots()
-        sns.barplot(
-            data=df_products,
-            x="item_name",
-            y="total_amount",
-            ax=ax
-        )
-        ax.set_xlabel("Product")
-        ax.set_ylabel("Total Sales Amount")
-        st.pyplot(fig)
+#         fig, ax = plt.subplots()
+#         sns.barplot(
+#             data=df_products,
+#             x="item_name",
+#             y="total_amount",
+#             ax=ax
+#         )
+#         ax.set_xlabel("Product")
+#         ax.set_ylabel("Total Sales Amount")
+#         st.pyplot(fig)
 
-        st.dataframe(df_products, width="stretch")
-    else:
-        st.info("No product sales data available.")
+#         st.dataframe(df_products, width="stretch")
+#     else:
+#         st.info("No product sales data available.")
 
-st.divider()
+# st.divider()
 
 st.subheader("Quick Actions")
 
