@@ -162,7 +162,6 @@ if st.session_state["invoice_items"]:
         if st.button("Clear Items"):
             st.session_state["invoice_items"] = []
             st.rerun()
-
 st.divider()
 
 st.subheader("Invoice History")
@@ -177,7 +176,87 @@ if invoice_res.status_code == 200:
 
     if invoices:
         df_invoices = pd.DataFrame(invoices)
-        st.dataframe(df_invoices, width="stretch")
+
+        display_df = df_invoices[
+            [
+                "id",
+                "invoice_number",
+                "customer_id",
+                "invoice_date",
+                "total_amount",
+                "paid_amount",
+                "balance_amount",
+                "payment_status"
+            ]
+        ]
+
+        search_invoice = st.text_input("🔍 Search Invoice Number")
+
+        if search_invoice:
+            display_df = display_df[
+                display_df["invoice_number"]
+                .astype(str)
+                .str.contains(search_invoice, case=False, na=False)
+            ]
+
+        st.dataframe(display_df, width="stretch")
+
+        st.divider()
+
+        st.subheader("Invoice Actions")
+
+        invoice_options = {
+            f"{row['invoice_number']} | Total ₹{row['total_amount']} | Status {row['payment_status']}": row
+            for _, row in df_invoices.iterrows()
+        }
+
+        selected_invoice_label = st.selectbox(
+            "Select Invoice",
+            list(invoice_options.keys())
+        )
+
+        selected_invoice = invoice_options[selected_invoice_label]
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+           if st.button("👁 View Invoice Details"):
+                st.write("### Invoice Details")
+
+                st.write(f"**Invoice Number:** {selected_invoice['invoice_number']}")
+                st.write(f"**Invoice Date:** {selected_invoice['invoice_date']}")
+                st.write(f"**Customer ID:** {selected_invoice['customer_id']}")
+                st.write(f"**Total Amount:** ₹{selected_invoice['total_amount']}")
+                st.write(f"**Paid Amount:** ₹{selected_invoice['paid_amount']}")
+                st.write(f"**Balance Amount:** ₹{selected_invoice['balance_amount']}")
+                st.write(f"**Payment Status:** {selected_invoice['payment_status']}")
+
+                st.write("### Items")
+                items_df = pd.DataFrame(selected_invoice["items"])
+                st.dataframe(items_df, width="stretch")
+
+        with col2:
+            pdf_url = f"{BASE_URL}/pdf/invoice/{selected_invoice['id']}/company/{company_id}"
+
+            pdf_response = requests.get(
+                pdf_url,
+                headers=get_headers()
+            )
+
+            if pdf_response.status_code == 200:
+                st.download_button(
+                    label="📄 Download PDF",
+                    data=pdf_response.content,
+                    file_name=f"invoice_{selected_invoice['invoice_number'].replace('/', '_')}.pdf",
+                    mime="application/pdf"
+                )
+            else:
+                st.error("PDF not available.")
+
+        with col3:
+            if st.button("💰 Go to Payments"):
+                st.switch_page("pages/7_Payments.py")
+
     else:
         st.info("No invoices found.")
 else:
