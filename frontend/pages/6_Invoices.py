@@ -105,8 +105,20 @@ if add_item:
 if st.session_state["invoice_items"]:
     st.subheader("Invoice Items")
 
+    for index, item in enumerate(st.session_state["invoice_items"]):
+        col1, col2, col3, col4, col5, col6 = st.columns([3, 1, 1, 1, 1, 1])
+
+        col1.write(item["item_name"])
+        col2.write(f"Qty: {item['quantity']}")
+        col3.write(item["unit"])
+        col4.write(f"₹{item['price_per_unit']}")
+        col5.write(f"₹{item['amount']:.2f}")
+
+        if col6.button("❌", key=f"remove_item_{index}"):
+            st.session_state["invoice_items"].pop(index)
+            st.rerun()
+
     df_items = pd.DataFrame(st.session_state["invoice_items"])
-    st.dataframe(df_items, width="stretch")
 
     sub_total = df_items["amount"].sum()
 
