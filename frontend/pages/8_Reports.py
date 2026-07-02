@@ -82,7 +82,7 @@ if customer_res.status_code == 200:
 
         fig, ax = plt.subplots()
         sns.barplot(
-            data=df_customers,
+            data=df_customers_chart,
             x="total_purchase",
             y="customer_name",
             ax=ax
@@ -112,7 +112,7 @@ if product_res.status_code == 200:
 
         fig, ax = plt.subplots()
         sns.barplot(
-            data=df_products,
+            data=df_products_chart,   
             x="item_name",
             y="total_amount",
             ax=ax
