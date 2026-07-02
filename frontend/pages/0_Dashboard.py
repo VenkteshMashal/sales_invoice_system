@@ -121,7 +121,7 @@ col1, col2 = st.columns(2)
 #         st.dataframe(df_products, width="stretch")
 #     else:
 #         st.info("No product sales data available.")
-
+    
 # st.divider()
 
 st.subheader("Quick Actions")
