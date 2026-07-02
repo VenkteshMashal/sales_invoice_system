@@ -8,6 +8,9 @@ from utils.api import BASE_URL, get_headers
 from utils.auth import require_login, require_company
 from utils.layout import render_header
 
+def format_currency(amount):
+    return f"₹{float(amount):,.2f}"
+
 st.set_page_config(page_title="Reports", page_icon="📊", layout="wide")
 
 require_login()
@@ -27,9 +30,9 @@ if summary_res.status_code == 200:
 
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric("Total Sales", f"₹{summary['total_sales']}")
-    col2.metric("Received", f"₹{summary['total_received']}")
-    col3.metric("Balance", f"₹{summary['total_balance']}")
+    col1.metric("Total Sales", format_currency(summary["total_sales"]))
+    col2.metric("Received", format_currency(summary["total_received"]))
+    col3.metric("Balance", format_currency(summary["total_balance"]))
     col4.metric("Invoices", summary["total_invoices"])
 
 st.divider()
@@ -74,6 +77,8 @@ if customer_res.status_code == 200:
 
     if customer_data:
         df_customers = pd.DataFrame(customer_data)
+        df_customers_chart = df_customers.copy()
+        df_customers["total_purchase"] = df_customers["total_purchase"].apply(format_currency)
 
         fig, ax = plt.subplots()
         sns.barplot(
@@ -102,6 +107,8 @@ if product_res.status_code == 200:
 
     if product_data:
         df_products = pd.DataFrame(product_data)
+        df_products_chart = df_products.copy()
+        df_products["total_amount"] = df_products["total_amount"].apply(format_currency)
 
         fig, ax = plt.subplots()
         sns.barplot(

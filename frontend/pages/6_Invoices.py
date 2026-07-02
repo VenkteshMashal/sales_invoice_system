@@ -1,11 +1,17 @@
 import streamlit as st
 import requests
 import pandas as pd
-from datetime import date
+from datetime import date, datetime
 
 from utils.api import BASE_URL, get_headers
 from utils.auth import require_login, require_company
 from utils.layout import render_header
+
+def format_currency(amount):
+    return f"₹{float(amount):,.2f}"
+
+def format_date(date_value):
+    return datetime.strptime(str(date_value), "%Y-%m-%d").strftime("%d-%b-%Y")
 
 st.set_page_config(page_title="Invoices", page_icon="🧾", layout="wide")
 
@@ -111,8 +117,8 @@ if st.session_state["invoice_items"]:
         col1.write(item["item_name"])
         col2.write(f"Qty: {item['quantity']}")
         col3.write(item["unit"])
-        col4.write(f"₹{item['price_per_unit']}")
-        col5.write(f"₹{item['amount']:.2f}")
+        col4.write(format_currency(item["price_per_unit"]))
+        col5.write(format_currency(item["amount"]))
 
         if col6.button("❌", key=f"remove_item_{index}"):
             st.session_state["invoice_items"].pop(index)
@@ -133,9 +139,9 @@ if st.session_state["invoice_items"]:
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Sub Total", f"₹{sub_total:.2f}")
-    col2.metric("GST", f"₹{gst_amount:.2f}")
-    col3.metric("Total", f"₹{total_amount:.2f}")
+    col1.metric("Sub Total", format_currency(sub_total))
+    col2.metric("GST", format_currency(gst_amount))
+    col3.metric("Total", format_currency(total_amount))
 
     col_a, col_b = st.columns(2)
 
@@ -163,7 +169,7 @@ if st.session_state["invoice_items"]:
             if response.status_code == 200:
                 created_invoice = response.json()
                 st.success(
-                    f"Invoice created successfully: {created_invoice['invoice_number']}"
+                   f"✅ Invoice created successfully: {created_invoice['invoice_number']}"
                 )
                 st.session_state["invoice_items"] = []
                 st.rerun()
@@ -227,6 +233,11 @@ display_df = display_df.rename(columns={
     "payment_status": "Status"
 })
 
+display_df["Date"] = display_df["Date"].apply(format_date)
+display_df["Total"] = display_df["Total"].apply(format_currency)
+display_df["Paid"] = display_df["Paid"].apply(format_currency)
+display_df["Balance"] = display_df["Balance"].apply(format_currency)
+
 search_invoice = st.text_input("🔍 Search Invoice / Customer")
 
 if search_invoice:
@@ -242,7 +253,7 @@ st.divider()
 st.subheader("Invoice Actions")
 
 invoice_options = {
-    f"{row['invoice_number']} | {row['customer_name']} | ₹{row['total_amount']} | {row['payment_status']}": row
+    f"{row['invoice_number']} | {row['customer_name']} | {format_currency(row['total_amount'])} | {row['payment_status']}": row
     for _, row in df_invoices.iterrows()
 }
 
@@ -260,12 +271,12 @@ with col1:
         st.write("### Invoice Details")
         st.write(f"**Invoice No:** {selected_invoice['invoice_number']}")
         st.write(f"**Customer:** {selected_invoice['customer_name']}")
-        st.write(f"**Date:** {selected_invoice['invoice_date']}")
-        st.write(f"**Sub Total:** ₹{selected_invoice['sub_total']}")
-        st.write(f"**GST:** ₹{selected_invoice['gst_amount']}")
-        st.write(f"**Total:** ₹{selected_invoice['total_amount']}")
-        st.write(f"**Paid:** ₹{selected_invoice['paid_amount']}")
-        st.write(f"**Balance:** ₹{selected_invoice['balance_amount']}")
+        st.write(f"**Date:** {format_date(selected_invoice['invoice_date'])}")
+        st.write(f"**Sub Total:** {format_currency(selected_invoice['sub_total'])}")
+        st.write(f"**GST:** {format_currency(selected_invoice['gst_amount'])}")
+        st.write(f"**Total:** {format_currency(selected_invoice['total_amount'])}")
+        st.write(f"**Paid:** {format_currency(selected_invoice['paid_amount'])}")
+        st.write(f"**Balance:** {format_currency(selected_invoice['balance_amount'])}")
         st.write(f"**Status:** {selected_invoice['payment_status']}")
         st.write(f"**Amount in Words:** {selected_invoice['amount_in_words']}")
 
