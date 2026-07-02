@@ -161,8 +161,12 @@ if customer_options:
         "Select Customer to Delete",
         list(customer_options.keys())
     )
+confirm_delete = st.checkbox("I confirm I want to delete this customer")
 
-    if st.button("Delete Customer"):
+if st.button("Delete Customer"):
+    if not confirm_delete:
+        st.warning("Please confirm before deleting.")
+    else:
         customer_id = customer_options[selected_customer]
 
         delete_response = requests.delete(
