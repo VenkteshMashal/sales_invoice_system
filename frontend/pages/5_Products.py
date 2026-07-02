@@ -81,6 +81,78 @@ st.dataframe(df, width="stretch")
 
 st.divider()
 
+st.divider()
+
+st.subheader("✏️ Edit Product")
+
+edit_options = {
+    f"{row['product_name']} - ID {row['id']}": row
+    for _, row in df.iterrows()
+}
+
+if edit_options:
+    selected_product = st.selectbox(
+        "Select Product to Edit",
+        list(edit_options.keys())
+    )
+
+    product = edit_options[selected_product]
+
+    with st.form("edit_product_form"):
+        col1, col2 = st.columns(2)
+
+        with col1:
+            edit_name = st.text_input(
+                "Product Name",
+                value=product["product_name"]
+            )
+
+            edit_unit = st.text_input(
+                "Unit",
+                value=product["unit"]
+            )
+
+        with col2:
+            edit_price = st.number_input(
+                "Price Per Unit",
+                min_value=0.0,
+                value=float(product["price_per_unit"]),
+                step=1.0
+            )
+
+            edit_description = st.text_area(
+                "Description",
+                value=product.get("description") or ""
+            )
+
+        update_btn = st.form_submit_button("Update Product")
+
+        if update_btn:
+
+            payload = {
+                "product_name": edit_name,
+                "unit": edit_unit,
+                "price_per_unit": edit_price,
+                "description": edit_description
+            }
+
+            response = requests.put(
+                f"{BASE_URL}/products/{product['id']}/company/{company_id}",
+                json=payload,
+                headers=get_headers()
+            )
+
+            if response.status_code == 200:
+                st.success("Product updated successfully.")
+                st.rerun()
+            else:
+                st.error(
+                    response.json().get(
+                        "detail",
+                        "Failed to update product"
+                    )
+                )
+
 # Delete Product
 st.subheader("Delete Product")
 
